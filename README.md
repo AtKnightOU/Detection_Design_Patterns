@@ -15,4 +15,8 @@ https://github.com/AtKnightOU/Java_parser/
 \
 Na parsing is de file *inputSystem.xml* gegenereerd.
 
-# De code in deze repository werkt correct, maar is nog niet bruikbaar....
+## De code in deze repository werkt correct, maar is nog niet bruikbaar....
+
+De software is geschreven in Netbeans.
+\
+Zie: https://netbeans.apache.org/
