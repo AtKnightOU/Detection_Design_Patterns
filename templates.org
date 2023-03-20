@@ -1,0 +1,802 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Version 9 maart 2023
+    ====================
+
+
+    Explanation:
+    ============
+    These definitions of design patterns are based on the formal definition
+    that are  described in FASE_2021_paper_6.pdf.
+    
+
+    <template name="...">
+    =========
+    Describes a design pattern with the specified name.
+    It is allowed that two or more descriptions with the same name occur.
+    For detection, corresponding classes, edges, repeating groups, peninsulas,
+    operations, parameters, attributes should occur in a UML-diagram or source.
+    prescribed_name="..." instead of name="..." e.g. "clone" should
+    literaly occur.
+    More classes, edges, repeating groups, peninsulas, operations parameters,
+    attributes may occur.
+    
+    <class name="..." type="...">
+    ======
+
+    Value of type is default "class"
+    Other possible values of type are
+      
+      - ABSTRACT                 classs is abstract
+    
+      - ABSTRACT_INTERFACE       the class may be an abstract class or an
+                                 interface
+
+      - INTERFACE
+
+       
+    
+    <edge node1="..."            node2="..." type="..."/>
+    =====
+    node1 and node2 are names of (abstract)classes or interfaces.
+
+    Possible values of type are:
+      - ASSOCIATION              bidirectional association
+                                 Notice: does not occur in [Gamma]
+    
+      - ASSOCIATION_DIRECTED     unidirectional association  from node1 to node2
+                                 e.g. class A {
+                                          B b;
+				          ....
+			              }
+                                 <A, B, ASSOCIATION_DIRECTED>					  
+				 
+      
+      - ONETOMANY                node2 is the ONE-side and is associated with
+                                 =====================
+                                 node1 that is the MANY-side of the association.
+				 ===========================
+				 e.g. class A {
+				          ArrayList<String> manyStrings;
+				          ....
+			              }
+				 <String, A, ONETOMANY>	  
+					  
+      
+      - INHERITANCE              node2 is the superclass or (super)interface
+                                 node1 is a subclass or subinterface which may
+                                 have relations to other classes/interfaces.
+                                  
+      - DEPENDENCY               node1 depends on node2.
+                                 e.g. node1 generates an object of node2.
+      
+
+    <repeating_group>
+    ================
+    Repeating_group is used to define a group of classes, edges, peninsulas,
+    and repeating_groups which may occur more than once.
+    In a repeating_group an association to a class or interface outside the
+    repeating_group should exist. 
+    All classes in a repeating_group should occur in at least one edge.
+    
+
+    <peninsula>
+    ==========
+    All classes and interfaces may only have relationships with other classes
+    and interfaces on the peninsula.
+    Peninsula is used to define the Facade pattern.
+
+
+    <parameter name="..." type="..."/>
+    ==========
+    name has to be defined but "" is allowed.
+    if name is "" then type has to be defined.
+    if name is not "" then type may be defined.
+    Default value for type is "".
+
+    
+    
+    <operation ... > and <attribute ... >
+    ==========           ==========
+    These tags may have attributes with the following default values:
+        modifier   = "public"
+        isStatic   = "false"
+        isAbstract = "false"
+	
+    <attribute>
+    ==========
+    Should have a name and may have a type.
+
+	
+    <operation ... > may have attributes with the following default values:	
+        occursMultiple = "false"   necessary for Template Method
+        calledBy       = ""        necessary for Template Method
+	correspondTo   = ""        necessary for Visitor pattern
+
+-->
+
+
+<templates>    
+    <template  name="Abstract Factory">
+        <class name="Client"/>
+        <class name="AbstractFactory" type="ABSTRACT_INTERFACE"/> 
+
+        <repeating_group>
+            <class name="AbstrProd"   type="ABSTRACT_INTERFACE"/>
+            
+            <repeating_group>
+                <class name="Prod"/>
+                <edge node1="Prod"            node2="AbstrProd"
+		       type="INHERITANCE"/>
+		<edge node1="ConcreteFactory" node2="Prod"
+		       type="DEPENDENCY"/>
+            </repeating_group>
+            
+            <edge node1="Client"   node2="AbstrProd"
+                                    type="ASSOCIATION_DIRECTED"/>
+        </repeating_group>
+        
+        <repeating_group>
+            <class name="ConcreteFactory"/>
+            <edge node1="ConcreteFactory" node2="AbstractFactory"
+		   type="INHERITANCE"/>
+        </repeating_group>
+        
+        <edge node1="Client" node2="AbstractFactory"
+                              type="ASSOCIATION_DIRECTED"/>
+    </template>
+    
+    
+    <template name="Builder">
+        <class name="Director">
+            <operation name="construct"/>
+        </class>
+        
+        <class name="Builder" type="ABSTRACT_INTERFACE">
+            <operation name="buildPart" isAbstract="true"/>
+        </class>
+
+	<repeating_group>
+            <class name="ConcreteBuilder">
+                <operation name="buildPart"/>
+                <operation name="getResult"/>
+            </class>
+
+	    <class name="Product"/>
+
+            <edge node1="ConcreteBuilder" node2="Builder"  type="INHERITANCE"/>
+	    <edge node1="ConcreteBuilder" node2="Product"  type="DEPENDENCY"/>
+	</repeating_group>
+        
+        <edge node1="Builder" node2="Director" type="ONETOMANY"/>
+    </template>
+   
+
+    <template name="Factory Method variant 1">
+        <!--
+          See article and the GoF book.
+          There are two major variants of this pattern.
+          This is the first variant.
+        -->
+          
+        <class name="Product" type="ABSTRACT_INTERFACE"/>
+        
+        <class name="Creator" type="ABSTRACT_INTERFACE">
+            <operation name="factoryMethod" isAbstract="true"/>
+            <operation name="anOperation"/>
+        </class>
+        
+        <repeating_group>
+            <class name="ConcreteProduct"/>
+        
+            <class name="ConcreteCreator">
+                <operation name="factoryMethod"/>
+            </class>
+           
+            <edge node1="ConcreteProduct" node2="Product" type="INHERITANCE"/>
+            <edge node1="ConcreteCreator" node2="Creator" type="INHERITANCE"/>
+            <edge node1="ConcreteCreator" node2="ConcreteProduct"
+                                           type="DEPENDENCY"/>
+        </repeating_group>
+    </template>
+
+
+    <template name="Factory Method variant 2">
+        <class name="Product" type="ABSTRACT_INTERFACE"/>
+        
+        <class name="Creator">
+            <operation name="factoryMethod"/>
+            <operation name="anOperation"/>
+        </class>
+        
+        <repeating_group>
+            <class name="ConcreteProduct"/>
+        
+            <class name="ConcreteCreator">
+                <operation name="factoryMethod"/>
+            </class>
+           
+            <edge node1="ConcreteProduct" node2="Product" type="INHERITANCE"/>
+            <edge node1="ConcreteCreator" node2="Creator" type="INHERITANCE"/>
+            <edge node1="ConcreteCreator" node2="ConcreteProduct"
+                                           type="DEPENDENCY"/>
+        </repeating_group>
+    </template>
+    
+
+    <template name="Prototype">
+        <class name="Client">
+            <operation name="operation"/>
+        </class>
+              
+        <class name="Prototype" type="ABSTRACT_INTERFACE">
+            <operation prescribed_name="clone" isAbstract="true"/>
+        </class>
+
+        <repeating_group>
+            <class name="ConcretePrototype">
+                <operation prescribed_name="clone"/>
+            </class>
+
+            <edge node1="ConcretePrototype" node2="Prototype"
+                                             type="INHERITANCE"/>
+        </repeating_group>
+        
+        <edge node1="Client"  node2="Prototype"  type="ASSOCIATION_DIRECTED"/>
+    </template>
+
+     
+    <template name="Singleton">
+        <class name="Singleton">
+            <attribute name="uniqInstance" type="Singleton"
+                       modifier="private"  isStatic="true"/>
+            
+            <operation name="Singleton"    modifier="private"/>
+            <operation name="getInstance"  isStatic="true"/>
+        </class>
+    </template>
+
+
+    <template name="Adapter">
+        <class name="Client"/>
+        
+        <class name="Target" type="ABSTRACT_INTERFACE">
+            <operation name="request" isAbstract="true" />
+        </class>
+        
+        <class name="Adaptee">
+            <operation name="specificRequest"/>
+        </class>
+    
+        <class name="Adapter">
+            <operation name="request"/>
+        </class>
+        
+        <edge node1="Client"  node2="Target"  type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Adapter" node2="Target"  type="INHERITANCE"/>
+        <edge node1="Adapter" node2="Adaptee" type="ASSOCIATION_DIRECTED"/>
+    </template>
+    
+    
+    <template name="Bridge">
+        <class name="Abstraction" type="ABSTRACT">
+            <operation name="operation"/>
+        </class>
+    
+        <class name="Implementor" type="ABSTRACT_INTERFACE">
+            <operation name="operationImp" isAbstract="true"/>
+        </class>
+    
+        <repeating_group>
+            <class name="RefinedAbstraction"/>
+            
+            <edge node1="RefinedAbstraction" node2="Abstraction"
+                                              type="INHERITANCE"/>
+        </repeating_group>
+    
+        <repeating_group>
+            <class name="ConcreteImplementor">
+                <operation name="operationImp"/>
+            </class>
+            
+            <edge node1="ConcreteImplementor" node2="Implementor"
+                                               type="INHERITANCE"/>
+        </repeating_group>
+        
+        <edge  node1="Implementor" node2="Abstraction" type="ONETOMANY"/>
+    </template>
+    
+    
+    <template name="Composite">
+        <class name="Client"/>
+    
+        <class name="Component" type="ABSTRACT_INTERFACE">
+            <operation name="operation" isAbstract="true"/>
+        </class>
+    
+        <class name="Leaf">
+            <operation name="operation"/>
+        </class>
+    
+        <class name="Composite">
+            <operation name="operation"/>
+            
+            <operation name="add">
+                <parameter name="" type="Component"/>
+            </operation>
+            
+            <operation name="remove">
+                <parameter name="" type="Component"/>
+            </operation>
+            
+            <operation name="getChild">
+                <parameter name="" type="int"/>
+            </operation>
+        </class>
+            
+        <edge node1="Client"    node2="Component" type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Leaf"      node2="Component" type="INHERITANCE"/>
+        <edge node1="Composite" node2="Component" type="INHERITANCE"/>
+        <edge node1="Component" node2="Composite" type="ONETOMANY"/>
+    </template>                                                                  
+    
+    
+    <template name="Decorator">
+        <class name="Component" type="ABSTRACT_INTERFACE">
+            <operation name="operation" isAbstract="true"/>
+        </class>
+    
+        <class name="ConcreteComponent">
+            <operation name="operation"/>
+        </class>
+    
+        <class name="Decorator" type="ABSTRACT"> 
+            <operation name="operation"/>
+        </class>
+
+        <repeating_group>
+           <class name="ConcreteDecorator">
+               <operation name="operation"/>
+           </class>
+           
+           <edge node1="ConcreteDecorator" node2="Decorator"
+                                            type="INHERITANCE"/>          
+        </repeating_group>
+    
+        <edge node1="ConcreteComponent" node2="Component" type="INHERITANCE"/>
+        <edge node1="Decorator"         node2="Component" type="INHERITANCE"/>
+        <edge node1="Component"         node2="Decorator" type="ONETOMANY"/>
+
+    </template>
+    
+    
+    <template name="Facade">
+        <class name="Facade"/>
+        <!--
+           The abstract version of this class is defined in the next template.
+        -->
+
+	<peninsula>
+            <repeating_group>
+                <class name="AnyClass"/>
+
+                <edge node1="Facade" node2="AnyClass"
+		                      type="ASSOCIATION_DIRECTED"/>
+            </repeating_group>
+        </peninsula>    
+        
+        <!--
+            The Facade pattern contains three kinds of classes and interfaces:
+            1. The class Facade
+            2. A group of classes and interfaces on the peninsula.
+               Each of these classes or interfaces has a path of associations
+               to Facade.
+               None of the classes or interfaces has an association with
+	       a class or interface outside the peninsula.
+	    3. Class and interfaces outside the peninsula.
+	       These classes are not defined in this template.
+        -->
+    </template>
+
+    
+    <template name="Facade">
+        <class name="Facade" type="ABSTRACT"/>
+        <!--
+           See also the foregoing template.
+	   Read especially the comment.
+        -->
+
+	<peninsula>
+            <repeating_group>
+                <class name="AnyClass"/>
+
+                <edge node1="Facade" node2="AnyClass"
+		                      type="ASSOCIATION_DIRECTED"/>
+            </repeating_group>
+        </peninsula>    
+    </template>
+    
+
+    <template name="Flyweight">
+        <class name="FlyweightFactory">
+            <operation name="getFlyweight">
+                <parameter name="key"/>
+            </operation>
+        </class>
+        
+        <class name="Flyweight" type="ABSTRACT_INTERFACE">
+            <operation name="operation" isAbstract="true">
+                <parameter name="extrinsicState"/>
+            </operation>   
+        </class>
+    
+        <class name="Client"/>
+    
+        <class name="ConcreteFlyweight">
+            <attribute name="intrisicState"/>
+            
+            <operation name="operation">
+                <parameter name="extrinsicState"/>
+            </operation>
+        </class>
+    
+        <class name="UnsharedConcreteFlyweight">
+            <attribute name="allState"/>
+           
+            <operation name="operation">
+                <parameter name="extrinsicState"/>
+            </operation>
+        </class>
+    
+        <edge node1="Client"            node2="FlyweightFactory"
+                                         type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Client"            node2="ConcreteFlyweight"
+                                         type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Client"            node2="UnsharedConcreteFlyweight"
+                                         type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Flyweight"         node2="FlyweightFactory"
+	                                 type="ONETOMANY"/>
+        <edge node1="ConcreteFlyweight" node2="Flyweight"
+	                                 type="INHERITANCE"/>
+        <edge node1="UnsharedConcreteFlyweight" node2="Flyweight"
+                                                type="INHERITANCE"/>
+    </template>
+    
+    
+    <template name="Proxy">
+        <class name="Client"/>
+        
+        <class name="Subject" type="ABSTRACT_INTERFACE">
+            <operation name="request" isAbstract="true"/>
+        </class>
+        
+        <class name="RealSubject">
+            <operation name="request"/>
+        </class>
+        
+        <class name="Proxy">
+            <operation name="request"/>
+        </class>
+     
+        <edge node1="Client"      node2="Subject"  type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Proxy"       node2="Subject"  type="INHERITANCE"/>
+        <edge node1="RealSubject" node2="Subject"  type="INHERITANCE"/>
+        <edge node1="Proxy"       node2="RealSubject"
+                                                   type="ASSOCIATION_DIRECTED"/>
+    </template>
+    
+    
+    <template name="ChainOfResponsibility">
+        <class name="Client"/>
+        
+        <class name="Handler" type="ABSTRACT_INTERFACE">
+            <operation name="handleRequest" isAbstract="true"/>
+        </class>
+    
+        <repeating_group>
+            <class name="ConcreteHandler">
+                <operation name="handleRequest"/>
+            </class>
+
+            <edge node1="ConcreteHandler" node2="Handler" type="INHERITANCE"/>
+        </repeating_group>
+
+        <edge node1="Handler" node2="Handler" type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Client"  node2="Handler" type="ASSOCIATION_DIRECTED"/>
+    </template>                                                                   
+
+
+    <template name="Command">
+        <class name="Client"/>
+        <class name="Invoker"/>
+    
+        <class name="Command" type="ABSTRACT_INTERFACE">
+           <operation name="execute" isAbstract="true"/>
+        </class>
+    
+        <class name="Receiver">
+            <operation name="action"/>
+        </class>
+
+	<repeating_group>
+           <class name="ConcreteCommand">
+               <!--
+		  Exists in only one classdiagram but is not described in
+		  text.
+		 
+		  <attribute name="state" modifier="private"/>
+	       -->
+             
+               <operation name="execute"/>
+           </class>
+
+	   <edge node1="ConcreteCommand" node2="Command"
+		                          type="INHERITANCE"/>
+	   <edge node1="Client"          node2="ConcreteCommand"
+                                          type="DEPENDENCY"/>
+           <edge node1="ConcreteCommand" node2="Receiver"
+                                          type="ASSOCIATION_DIRECTED"/>
+	</repeating_group>
+        
+        <edge node1="Client"             node2="Receiver"
+                                          type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Command"            node2="Invoker"
+	                                  type="ONETOMANY"/>
+    </template>
+    
+    
+    <template name="Interpreter">
+        <class name="Client"/>
+        <class name="Context"/>
+        
+        <class name="AbstractExpression" type="ABSTRACT_INTERFACE">
+            <operation name="interpret" isAbstract="true">
+                <parameter name="" type="Context"/>
+            </operation>  
+        </class>
+        
+        <class name="TerminalExpression">
+            <operation name="interpret">
+                <parameter name="" type="Context"/>
+            </operation>         
+        </class>
+        
+        <class name="NonTerminalExpression">
+            <operation name="interpret">
+                <parameter name="" type="Context"/>
+            </operation>         
+        </class>
+      
+        <edge node1="Client" node2="AbstractExpression"
+                                    type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Client" node2="Context"
+                                    type="ASSOCIATION_DIRECTED"/>       
+        <edge node1="TerminalExpression"    node2="AbstractExpression"
+                                                   type="INHERITANCE"/>
+        <edge node1="NonTerminalExpression" node2="AbstractExpression"
+                                                   type="INHERITANCE"/>
+        <edge node1="AbstractExpression"    node2="NonTerminalExpression"
+                                                   type="ONETOMANY"/>
+    </template>
+    
+    
+    <template name="Iterator">
+        <class name="Aggregate" type="ABSTRACT_INTERFACE">
+            <operation name="createIterator" isAbstract="true"/>
+        </class>
+       
+        <class name="Iterator" type="ABSTRACT_INTERFACE">
+            <operation name="first"       isAbstract="true"/>
+            <operation name="next"        isAbstract="true"/>
+            <operation name="isDone"      isAbstract="true"/>
+            <operation name="currentItem" isAbstract="true"/>
+        </class>
+       
+        <class name="ConcreteIterator">
+            <operation name="first"/>
+            <operation name="next"/>
+            <operation name="isDone"/>
+            <operation name="currentItem"/>
+        </class>
+        
+        <class name="ConcreteAggregate">
+          <operation name="createIterator"/>
+        </class>
+      
+        <edge node1="ConcreteAggregate" node2="Aggregate" type="INHERITANCE"/>
+        <edge node1="ConcreteIterator"  node2="Iterator"  type="INHERITANCE"/>
+        <edge node1="ConcreteIterator"  node2="ConcreteAggregate"
+                                               type="ASSOCIATION_DIRECTED"/>
+        <edge node1="ConcreteAggregate" node2="ConcreteIterator"
+                                               type="DEPENDENCY"/>
+    </template>
+    
+    
+    <template name="Mediator">
+        <class name="Mediator"  type="ABSTRACT_INTERFACE"/>
+        <class name="Colleague" type="ABSTRACT"/>
+        <class name="ConcreteMediator"/>
+    
+        <repeating_group>
+            <class name="ConcreteColleague"/>
+            
+            <edge node1="ConcreteColleague" node2="Colleague"
+                                                   type="INHERITANCE"/>
+            <edge node1="ConcreteMediator"  node2="ConcreteColleague"
+                                                   type="ASSOCIATION_DIRECTED"/>
+        </repeating_group>         
+      
+        <edge node1="ConcreteMediator"      node2="Mediator" type="INHERITANCE"/>
+        <edge node1="Colleague"             node2="Mediator"
+                                             type="ASSOCIATION_DIRECTED"/>
+    </template>
+    
+    
+    <template name="Memento">
+        <class name="Originator">
+            <attribute name="state"/>
+            
+            <operation name="setMemento">
+                <parameter name="m" type="Memento"/>
+            </operation>
+            
+            <operation name="createMemento"/>
+        </class>
+        
+        <class name="Memento">
+            <attribute name="state"/>
+            
+            <operation name="getState"/>
+            <operation name="setState"/>
+        </class>
+        
+        <class name="Caretaker"/>
+      
+        <edge node1="Memento"    node2="Caretaker" type="ONETOMANY"/>
+        <edge node1="Originator" node2="Memento"   type="DEPENDENCY"/>
+    </template>                                                                   
+    
+    
+    <template name="Observer">
+        <class name="Subject" type="ABSTRACT">
+            <operation name="attach">
+                <parameter name="" type="Observer"/>
+            </operation>
+            
+            <operation name="dettach">
+                <parameter name="" type="Observer"/>
+            </operation>
+            
+            <operation name="notify"/>
+        </class>
+        
+        <class name="Observer" type="ABSTRACT_INTERFACE">
+            <operation name="update" isAbstract="true"/>
+        </class>
+        
+        <class name="ConcreteSubject">
+            <attribute name="subjectState"/>
+            <operation name="getState"/>
+            <operation name="setState"/>
+        </class>
+        
+        <class name="ConcreteObserver">
+            <attribute name="observerState"/>
+            
+            <operation name="update"/>
+        </class>
+      
+        <edge node1="ConcreteSubject"  node2="Subject"     type="INHERITANCE"/>
+        <edge node1="Observer"         node2="Subject"     type="ONETOMANY"/>
+        <edge node1="ConcreteObserver" node2="Observer"    type="INHERITANCE"/>
+        <edge node1="ConcreteObserver" node2="ConcreteSubject"
+                                              type="ASSOCIATION_DIRECTED"/>
+    </template>       
+
+   
+    <template name="State">
+        <class name="Context">
+            <operation name="request"/> 
+        </class>
+        
+        <class name="State" type="ABSTRACT_INTERFACE">
+            <operation name="handle" isAbstract="true"/>
+        </class>
+
+        <repeating_group>
+            <class name="ConcreteState">
+                <operation name="handle"/>
+            </class>
+
+            <edge node1="ConcreteState" node2="State" type="INHERITANCE"/>
+        </repeating_group>
+        
+        <edge node1="State" node2="Context" type="ONETOMANY"/>
+    </template>
+     
+
+    <template name="Strategy">
+        <class name="Context">                 
+            <operation name="contextInterface"/>
+        </class>
+            
+        <class name="Strategy" type="ABSTRACT_INTERFACE">
+            <operation name="algorithmInterface" isAbstract="true"/>
+        </class>
+        
+        <repeating_group>
+            <class name="ConcreteStrategy">
+                <operation name="algorithmInterface"/>
+            </class>
+
+           <edge node1="ConcreteStrategy" node2="Strategy" type="INHERITANCE"/> 
+        </repeating_group>       
+        
+        <edge node1="Strategy" node2="Context"  type="ONETOMANY"/>
+    </template>
+
+
+    <template name="Template Method">
+        <class name="AbstractClass" type="ABSTRACT">
+            <operation name="templateMethod"/>
+            <operation name="primitiveOperation" occursMultiple="true"
+                       isAbstract="true"         calledBy="templateMethod"/>
+        </class>
+
+        <class name="ConcreteClass"/>
+
+        <edge node1="ConcreteClass" node2="AbstractClass" type="INHERITANCE"/>
+    </template>
+
+
+    <template name="Visitor">
+        <class name="Client"/>
+        
+        <class name="Visitor" type="ABSTRACT_INTERFACE">
+            <operation name="visit" correspondTo="ConcreteElement">
+                <parameter name="" type="ConcreteElement"/>
+
+                <!--
+                   correspondTo="Element" and type="ConcreteElement"
+                   means that for every 
+                   specialization of "Element", i.c. "ConcreteElement",
+                   there is an operation "visit" with  parameter
+                   of that specialization of Element.
+                 -->        
+                    
+            </operation>
+        </class>
+
+        <class name="Element" type="ABSTRACT_INTERFACE">
+            <operation name="acceptVisitor" isAbstract="true">
+                <parameter name="" type="Visitor"/>
+            </operation>  
+            </class>
+
+        <class name="ObjectStructure"/>
+
+        <repeating_group>
+            <class name="ConcreteVisitor"/>
+
+            <edge node1="ConcreteVisitor" node2="Visitor" type="INHERITANCE"/>
+        </repeating_group>
+
+
+        <repeating_group>
+            <class name="ConcreteElement">
+                <operation name="operation"/>
+            </class>
+
+            <edge node1="ConcreteElement" node2="Element" type="INHERITANCE"/>
+        </repeating_group>  
+
+        <edge node1="Client"          node2="Visitor"
+                                            type="ASSOCIATION_DIRECTED"/>
+        <edge node1="Client"          node2="ObjectStructure"
+                                            type="ASSOCIATION_DIRECTED"/>
+        <edge node1="ObjectStructure" node2="Element"
+                                            type="ASSOCIATION_DIRECTED"/>
+    </template>
+
+ </templates>
