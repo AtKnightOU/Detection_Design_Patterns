@@ -8,8 +8,7 @@ De design patterns die gedetecteerd kunnen worden zijn gespecificeerd
 in de file *templates.xml* Deze file mag gewijzigd worden.
 
 De Java sources die design patterns kunnen bevatten,
-worden geparsed door de sources in de repository
-*Java_parser*. Deze repository bestaat nog niet.
+worden geparsed door de sources in https://github.com/AtKnightOU/Java_parser/
 Na parsing is de file *inputSystem.xml* gegenereerd.
 
-De code in deze repository is nog niet bruikbaar....
+# De code in deze repository is nog niet bruikbaar....
